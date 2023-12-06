@@ -173,23 +173,29 @@ struct Game {
 		self.rounds = rounds
 	}
 	
-	func isPossible(red: Draw, blue: Draw, green: Draw) -> Bool {
-		rounds.filter {
-			$0.blueDraw?.number ?? 0 > blue.number
-			|| $0.redDraw?.number ?? 0 > red.number
-			|| $0.greenDraw?.number ?? 0 > green.number
-		}.isEmpty
+	var power: Int {
+		let maxVals = rounds.reduce((maxRed: 0, maxGreen: 0, maxBlue: 0)) {
+			var maxVals = $0
+			if let maxRed = $1.redDraw?.number,
+				maxRed > maxVals.maxRed {
+				maxVals.maxRed = maxRed
+			}
+			if let maxGreen = $1.greenDraw?.number,
+				maxGreen > maxVals.maxGreen {
+				maxVals.maxGreen = maxGreen
+			}
+			if let maxBlue = $1.blueDraw?.number,
+				maxBlue > maxVals.maxBlue {
+				maxVals.maxBlue = maxBlue
+			}
+			return maxVals
+		}
+		return maxVals.maxRed * maxVals.maxBlue * maxVals.maxGreen
 	}
 }
 
-
-let maxRed: Draw = .init(colour: .red, number: 12)
-let maxGreen: Draw = .init(colour: .green, number: 13)
-let maxBlue: Draw = .init(colour: .blue, number: 14)
-
-let sum  = input.components(separatedBy: "\n")
-           .compactMap(Game.init)
-		   .filter{ $0.isPossible(red: maxRed, blue: maxBlue, green: maxGreen)}
-		   .reduce(0){$0 + $1.id}
-
+let sum = input.components(separatedBy: "\n")
+		  .compactMap(Game.init)
+		  .reduce(0) { $0 + $1.power}
+			
 print(sum)
